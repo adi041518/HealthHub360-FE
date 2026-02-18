@@ -1,9 +1,10 @@
 import { Routes, Route } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import "./App.css";
-
+import Role from "./components/role";
+import CreateRole from "./components/createRole";
 const Loginpage = lazy(() => import("./pages/login"));
-const ForgetPage = lazy(() => import("./pages/forget"));
+const ForgotPage = lazy(() => import("./pages/forgot"));
 const ResetPage = lazy(() => import("./pages/reset"));
 
 function App() {
@@ -17,8 +18,10 @@ function App() {
     >
       <Routes>
         <Route path="/login" element={<Loginpage />} />
-        <Route path="/forgot-password" element={<ForgetPage />} />
+        <Route path="/forgot-password" element={<ForgotPage />} />
         <Route path="/reset-password" element={<ResetPage />} />
+        <Route path="/roles" element={<Role />} />
+        <Route path="/roles/create" element={<CreateRole/>}/>
       </Routes>
     </Suspense>
   );

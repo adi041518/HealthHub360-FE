@@ -1,7 +1,7 @@
 import Example from "./carasouel";
-import Forget from "../components/forget";
+import Forgot from "../components/forgot";
 import HealthHub360Logo from "./healthub360";
-const ForgetPage = () => {
+const ForgotPage = () => {
     return (
         <div style={{ display: "flex", height: "100vh" }}>
 
@@ -21,7 +21,7 @@ const ForgetPage = () => {
                 }}
             >
                 <HealthHub360Logo />
-                <Forget />
+                <Forgot />
                 <div style={{ marginTop: "auto", width: "100%" }}>
                     <div
                         style={{
@@ -39,4 +39,4 @@ const ForgetPage = () => {
         </div>
     );
 };
-export default ForgetPage;
+export default ForgotPage;

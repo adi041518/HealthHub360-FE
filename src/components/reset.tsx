@@ -31,9 +31,9 @@ function Reset() {
  
                 alert("Password reset successful!");
  
-                localStorage.removeItem("token");
-                localStorage.setItem("token",response.data.data.token)
-                navigate("/login");
+                // localStorage.removeItem("token");
+                // localStorage.setItem("token",response.data.data.token)
+                navigate("/roles");
             }
  
         } catch (error: any) {
