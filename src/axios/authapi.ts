@@ -1,13 +1,14 @@
-import axiosInstance from "../axios/axios.ts";
- 
+import axiosPublic from "./axiospublic.ts";
+import axiosPrivate from "./axiosprivate.ts";
 export const loginApi = (data: any) => {
-    return axiosInstance.post("/login", data);
+    return axiosPublic.post("/login", data);
 };
  
 export const resetPasswordApi = (payload: any) => {
-    return axiosInstance.post("/reset-password", payload);
+    return axiosPrivate.post("/reset-password", payload);
 };
  
 export const forgotPasswordApi = (payload: any) => {
-    return axiosInstance.post("/forgot-password", payload)
+    return axiosPublic.post("/forgot-password", payload)
 }
+ 

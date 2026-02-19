@@ -38,7 +38,11 @@ function Login() {
                 setStatus("success");
                 localStorage.setItem("token", response.data.data.token);
                 await delay(2000);
-                navigate("/reset-password");
+                if(response.data.data.reset==true){
+                  navigate("/reset-password");
+                }else{
+                    navigate("/dashboard");
+                }
 
             }
 
