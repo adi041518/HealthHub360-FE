@@ -3,6 +3,7 @@ import { Suspense, lazy } from "react";
 import "./App.css";
 import Role from "./components/role";
 import CreateRole from "./components/createRole";
+import ViewRoles from "./components/viewRoles";
 const Loginpage = lazy(() => import("./pages/login"));
 const ForgotPage = lazy(() => import("./pages/forgot"));
 const ResetPage = lazy(() => import("./pages/reset"));
@@ -22,6 +23,8 @@ function App() {
         <Route path="/reset-password" element={<ResetPage />} />
         <Route path="/roles" element={<Role />} />
         <Route path="/roles/create" element={<CreateRole/>}/>
+        <Route path="/roles/view/:roleCode" element={<ViewRoles />} />
+
       </Routes>
     </Suspense>
   );

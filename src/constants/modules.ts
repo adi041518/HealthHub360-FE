@@ -1,25 +1,26 @@
-import type { Module, Action } from "../types/role";
+import type { Module, Access } from "../types/role";
 
 export const MODULES: Module[] = [
-  "Tenant",
-  "Hospital",
-  "Doctor",
-  "Nurse",
-  "Receptionist",
-  "Pharmacist",
-  "Patient",
-  "TestReport",
-  "Guardian",
-  "Appointment",
-  "Billing",
-  "Consent",
-  "MedicalRecord",
-  "Medicine",
-  "Prescription",
-  "Role"
+  "tenant",
+  "hospital",
+  "doctor",
+  "nurse",
+  "receptionist",
+  "pharmacist",
+  "patient",
+  "testReport",
+  "guardian",
+  "appointment",
+  "billing",
+  "consent",
+  "medicalRecord",
+  "medicine",
+  "prescription",
+  "role",
+  "newTenant",
 ];
 
-export const ACTIONS: Action[] = [
+export const ACCESS: Access[] = [
   "create",
   "view",
   "update",

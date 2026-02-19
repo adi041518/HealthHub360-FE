@@ -1,27 +1,29 @@
 // Allowed Actions
-export type Action = "create" | "view" | "update" | "delete";
+export type Access = "create" | "view" | "update" | "delete";
 
 // Allowed Modules
 export type Module =
-  | "Tenant"
-  | "Hospital"
-  | "Doctor"
-  | "Nurse"
-  | "Receptionist"
-  | "Pharmacist"
-  | "Patient"
-  | "TestReport"
-  | "Guardian"
-  | "Appointment"
-  | "Billing"
-  | "Consent"
-  | "MedicalRecord"
-  | "Medicine"
-  | "Prescription"
-  | "Role";
+  | "tenant"
+  | "hospital"
+  | "doctor"
+  | "nurse"
+  | "receptionist"
+  | "pharmacist"
+  | "patient"
+  | "testReport"
+  | "guardian"
+  | "appointment"
+  | "billing"
+  | "consent"
+  | "medicalRecord"
+  | "medicine"
+  | "prescription"
+  | "role"
+  | "newTenant";
+
 
 // Privilege Model
 export type Privilege = {
   module: Module;
-  access: Action[];
+  access: Access[];
 };
