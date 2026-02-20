@@ -4,86 +4,100 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import { Link, useNavigate } from 'react-router-dom';
 import { loginApi } from '../axios/authapi';
-
+import { fetchRoleByIdApi } from '../axios/rolesApi';
+ 
 type LoginType = "email" | "phone" | "id";
 type status = "idle" | "loading" | "success";
 function Login() {
-
+ 
     const [status, setStatus] = useState<status>("idle");
     const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("");
     const [userId, setUserId] = useState("");
     const [password, setPassword] = useState("");
-
+ 
     const navigate = useNavigate();
     const delay = (ms: number) =>
         new Promise((resolve) => setTimeout(resolve, ms));
-
+ 
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-
+ 
         e.preventDefault();
         setStatus("loading");
         let payload: any = { password };
-
+ 
         if (loginType === "email") payload.email = email;
-        if (loginType === "phone") payload.phone = phone;
+        if (loginType === "phone") payload.phoneNo = phone;
         if (loginType === "id") payload.userId = userId;
-
+ 
         try {
-
+ 
+            console.log("payload:",payload)
             const response = await loginApi(payload);
             console.log("response: ", response)
             if (response.status === 200) {
                 await delay(1200);
                 setStatus("success");
                 localStorage.setItem("token", response.data.data.token);
+                localStorage.setItem("roleCode",response.data.data.code);
                 await delay(2000);
-                navigate("/reset-password");
-
+            if (response.data.data.reset == true) {
+                    navigate("/reset-password");
+                } else {
+                    const roleCode=response.data.data.roleCode
+                    console.log("roleCode: ",roleCode)
+                    localStorage.setItem("roleCode",roleCode)
+                    const fetchRoleResponse=await fetchRoleByIdApi(roleCode)
+                    console.log("FetchRoleResponse: ",fetchRoleResponse)
+                    localStorage.setItem("roleName",fetchRoleResponse.data.data.roleName)
+                    navigate("/dashboard");
+                }
+ 
+ 
             }
-
+ 
         } catch (error: any) {
             setStatus("idle");
             if (error.response?.status === 401) {
                 alert("Invalid credentials");
             }
-
+ 
             else if (error.response?.status === 403) {
                 navigate("/reset-password");
             }
-
+ 
             else {
                 alert("Server error");
             }
         }
     };
-
+ 
     const [loginType, setLoginType] = useState<LoginType>("email");
-
+ 
     return (
-
+ 
         <div className="d-flex justify-content-center align-items-center w-100 px-3">
-
-
+ 
+ 
             <Form
                 style={{
                     width: "100%",
-
+ 
                     boxShadow: "0 20px 60px rgba(0,0,0,0.15)",
                     borderRadius: "16px",
                     padding: "30px",
                     background: "white",
                     maxWidth: "500px",
                     minWidth: "300px"
-
+ 
                 }}
                 onSubmit={handleLogin}
             >
-
+ 
                 <h3 className="text-center mb-4" style={{ letterSpacing: "1.8px" }}>LOGIN</h3>
-
+ 
                 <div className="d-flex justify-content-around mb-3">
-
+ 
                     <Form.Check
                         type="radio"
                         label="Email"
@@ -92,7 +106,7 @@ function Login() {
                         checked={loginType === "email"}
                         onChange={() => setLoginType("email")}
                     />
-
+ 
                     <Form.Check
                         type="radio"
                         label="PhoneNo"
@@ -101,7 +115,7 @@ function Login() {
                         checked={loginType === "phone"}
                         onChange={() => setLoginType("phone")}
                     />
-
+ 
                     <Form.Check
                         type="radio"
                         label="UserID"
@@ -110,10 +124,10 @@ function Login() {
                         checked={loginType === "id"}
                         onChange={() => setLoginType("id")}
                     />
-
+ 
                 </div>
-
-
+ 
+ 
                 {loginType === "email" && (
                     <FloatingLabel
                         controlId="floatingEmail"
@@ -128,7 +142,7 @@ function Login() {
                         />
                     </FloatingLabel>
                 )}
-
+ 
                 {loginType === "phone" && (
                     <FloatingLabel
                         controlId="floatingPhone"
@@ -143,7 +157,7 @@ function Login() {
                         />
                     </FloatingLabel>
                 )}
-
+ 
                 {loginType === "id" && (
                     <FloatingLabel
                         controlId="floatingId"
@@ -158,7 +172,7 @@ function Login() {
                         />
                     </FloatingLabel>
                 )}
-
+ 
                 <FloatingLabel
                     controlId="floatingPassword"
                     label="Password"
@@ -171,19 +185,19 @@ function Login() {
                         onChange={(e) => setPassword(e.target.value)}
                     />
                 </FloatingLabel>
-
+ 
                 <div className="d-flex justify-content-between align-items-center">
-
+ 
                     <Button variant="primary" type='submit'>
                         Login
                     </Button>
-
+ 
                     <Link to="/forgot-password">
                         Forgot password?
                     </Link>
-
+ 
                 </div>
-
+ 
             </Form>
             {status !== "idle" && (
                 <div
@@ -215,11 +229,11 @@ function Login() {
                             <p style={{ marginTop: "20px" }}>Logging in...</p>
                         </>
                     )}
-
+ 
                     {status === "success" && (
                         <div className="success-wrapper">
                             <div className="ripple"></div>
-
+ 
                             <div className="success-circle">
                                 <svg viewBox="0 0 52 52" className="check-svg">
                                     <circle
@@ -236,24 +250,24 @@ function Login() {
                                     />
                                 </svg>
                             </div>
-
+ 
                             <div className="particles">
                                 {Array.from({ length: 12 }).map((_, i) => (
                                     <span key={i}></span>
                                 ))}
                             </div>
-
+ 
                             <p className="success-text">Login Successful</p>
                         </div>
                     )}
-
+ 
                 </div>
             )}
-
-
+ 
+ 
         </div>
     );
 }
-
+ 
 export default Login;
-
+ 

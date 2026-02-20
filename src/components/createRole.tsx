@@ -3,7 +3,7 @@ import type { Module, Access, Privilege } from "../types/role";
 import { MODULES, ACCESS } from "../constants/modules";
 import "./createRole.css";
 import { useNavigate } from "react-router-dom";
-import { rolesApi } from "../axios/authapi";
+import { rolesApi } from "../axios/rolesApi";
 const CreateRole = () => {
     const [roleName, setRoleName] = useState("");
     const [selectedModule, setSelectedModule] = useState<Module | "">("");
@@ -103,7 +103,7 @@ const CreateRole = () => {
 
             alert("Role created successfully");
 
-            navigate("/roles");       // 🔥 Navigate AFTER success
+            navigate("/dashboard/roles");       // 🔥 Navigate AFTER success
         } catch (error) {
             console.error(error);
             alert("Error creating role");

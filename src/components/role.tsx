@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Table from "react-bootstrap/Table";
-import { fetchAllRolesApi, deleteRoleByIdApi } from "../axios/authapi";
+import { fetchAllRolesApi, deleteRoleByIdApi } from "../axios/rolesApi";
 
 function Role() {
     const navigate = useNavigate();
@@ -23,7 +23,7 @@ function Role() {
         };
 
         fetchRoles();
-    }, []);
+    },[]);
 
     const deleteRole = async (roleCode: string) => {
         try {

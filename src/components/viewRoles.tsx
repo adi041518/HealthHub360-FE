@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { fetchRoleByIdApi } from "../axios/authapi";
+import { fetchRoleByIdApi } from "../axios/rolesApi";
 import type { Privilege } from "../types/role";
 import { ACCESS } from "../constants/modules";
 import { useNavigate } from "react-router-dom";

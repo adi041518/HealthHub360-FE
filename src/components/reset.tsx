@@ -33,7 +33,7 @@ function Reset() {
  
                 // localStorage.removeItem("token");
                 // localStorage.setItem("token",response.data.data.token)
-                navigate("/roles");
+                navigate("/login");
             }
  
         } catch (error: any) {
