@@ -2,9 +2,11 @@ import { useState, useRef, useEffect } from "react";
 import type { Module, Access, Privilege } from "../types/role";
 import { MODULES, ACCESS } from "../constants/modules";
 import "./createRole.css";
-import { useNavigate } from "react-router-dom";
-import { rolesApi } from "../axios/rolesApi";
-const CreateRole = () => {
+import { rolesApi } from "../axios/rolesApi";type Props = {
+    onSuccess: () => void;
+};
+
+const CreateRole = ({ onSuccess }: Props) => {
     const [roleName, setRoleName] = useState("");
     const [selectedModule, setSelectedModule] = useState<Module | "">("");
     const [selectedAccess, setSelectedAccess] = useState<Access[]>([]);
@@ -84,8 +86,6 @@ const CreateRole = () => {
         setPrivileges(privileges.filter((_, i) => i !== index));
     };
 
-    const navigate = useNavigate();
-
     const addRole = async () => {
         if (!roleName || privileges.length === 0) {
             alert("Please fill role name and privileges");
@@ -103,7 +103,7 @@ const CreateRole = () => {
 
             alert("Role created successfully");
 
-            navigate("/dashboard/roles");       // 🔥 Navigate AFTER success
+            onSuccess();      // 🔥 Navigate AFTER success
         } catch (error) {
             console.error(error);
             alert("Error creating role");
@@ -165,11 +165,11 @@ const CreateRole = () => {
             </div>
 
             {/* Access Dropdown */}
-            <div className="form-group" ref={dropdownRef}>
+            <div className="form-group " ref={dropdownRef}>
                 <label>Access</label>
 
                 <div
-                    className="dropdown-header"
+                    className="dropdown-header p-2"
                     onClick={() => setIsOpen(!isOpen)}
                 >
                     {selectedAccess.length > 0
@@ -178,7 +178,7 @@ const CreateRole = () => {
                 </div>
 
                 {isOpen && (
-                    <div className="dropdown-content">
+                    <div className="dropdown-content ">
                         {ACCESS.map(access => (
                             <label key={access}>
                                 <input

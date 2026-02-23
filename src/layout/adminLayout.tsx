@@ -2,123 +2,77 @@ import { useEffect, useMemo, useState } from "react";
 import DynamicGrid from "../components/agGrid";
 import Menubar from "../components/menubar";
 import NavbarComponent from "../components/navbar";
-import { menuAdminbar } from "../config/menubar";
+import { menuAdminbar, type AdminModuleType } from "../config/menubar";
 import { fetchAllTenants } from "../axios/tenant";
 import { fetchAllHospital } from "../axios/hospital";
+import { fetchAllDoctors } from "../axios/doctors";
+import { fetchAllNurse } from "../axios/nurse";
+import { fetchAllPharmacist } from "../axios/pharmacist";
+import { fetchAllReceptionist } from "../axios/receptionist";
 import { hasAccess } from "../config/permission";
 import { fetchRoleByIdApi } from "../axios/rolesApi";
-import TenantFormModal from "../components/FormModal";
- 
-// 🔥 Import your real APIs
- 
- 
+import ModuleFormModal from "../components/FormModal";
+
 const Adminlayout = () => {
-    const role = "superadmin"; // get this from token in real case
-    const menuBar = menuAdminbar[role] || [];
- 
-    const [selectedMenu, setSelectedMenu] = useState<string>("");
+    const role = localStorage.getItem("roleName") || "SUPERADMIN";
+    const menuBar = menuAdminbar[role] ?? [];
+
+    const [selectedMenu, setSelectedMenu] = useState("");
+    const [module, setModule] = useState<AdminModuleType>("tenant");
     const [rowData, setRowData] = useState<any[]>([]);
-    const [module, setModule] = useState<string>("");
     const [roleDoc, setRoleDoc] = useState<any>(null);
+
     const [showForm, setShowForm] = useState(false);
     const [formMode, setFormMode] = useState<"create" | "edit" | "view">("create");
     const [selectedRow, setSelectedRow] = useState<any>(null);
-    console.log(module)
-    const permissions = useMemo(() => {
-        return {
-            canView: hasAccess(roleDoc, module, "view"),
-            canCreate: hasAccess(roleDoc, module, "create"),
-            canUpdate: hasAccess(roleDoc, module, "update"),
-            canDelete: hasAccess(roleDoc, module, "delete"),
-        };
-    }, [roleDoc, module]);
-    const apiMap: Record<string, () => Promise<any>> = {
-        Tenants: fetchAllTenants,
-        Hospitals: fetchAllHospital,
+
+    const permissions = useMemo(() => ({
+        canView: hasAccess(roleDoc, module, "view"),
+        canCreate: hasAccess(roleDoc, module, "create"),
+        canUpdate: hasAccess(roleDoc, module, "update"),
+        canDelete: hasAccess(roleDoc, module, "delete"),
+    }), [roleDoc, module]);
+
+    const apiMap: Record<AdminModuleType, () => Promise<any>> = {
+        tenant: fetchAllTenants,
+        hospital: fetchAllHospital,
+        doctor: fetchAllDoctors,
+        nurse: fetchAllNurse,
+        pharmacist: fetchAllPharmacist,
+        receptionist: fetchAllReceptionist,
     };
- 
- 
-    const fetchData = async (key: string) => {
-        try {
-            const apiFunction = apiMap[key];
-            if (!apiFunction) {
-                console.error("No API mapped for:", key);
-                setRowData([]);
-                return;
-            }
- 
-            const response = await apiFunction();
-            setRowData(response.data.data || []);
-        } catch (error) {
-            console.error("Error fetching data:", error);
-            setRowData([]);
-        } finally {
- 
-        }
+
+    const fetchData = async (mod: AdminModuleType) => {
+        const response = await apiMap[mod]();
+        setRowData(response.data.data || []);
     };
+
     useEffect(() => {
-        const fetchRole = async () => {
-            try {
-                const roleCode = localStorage.getItem("roleCode");
- 
-                if (!roleCode) return;
- 
-                const response = await fetchRoleByIdApi(roleCode);
-                console.log("the role DOc is :", response)
-                setRoleDoc(response.data.data);   // full role document
- 
-            } catch (error) {
-                console.error("Error fetching role:", error);
-            }
-        };
- 
-        fetchRole();
+        const roleCode = localStorage.getItem("roleCode");
+        if (!roleCode) return;
+        fetchRoleByIdApi(roleCode).then(res =>
+            setRoleDoc(res.data.data)
+        );
     }, []);
+
     useEffect(() => {
         if (menuBar.length > 0) {
-            const defaultItem = menuBar[0];
- 
-            setSelectedMenu(defaultItem.title);
-            setModule(defaultItem.module);   // 🔥 important
-            fetchData(defaultItem.title);
+            const first = menuBar[0];
+            setSelectedMenu(first.title);
+            setModule(first.module);
+            fetchData(first.module);
         }
-    }, []);
- 
-    const handleMenuClick = (key: string, module: string) => {
-        setSelectedMenu(key);
-        setModule(module);
-        fetchData(key);
+    }, [role]);
+
+    const handleMenuClick = (title: string, mod: AdminModuleType) => {
+        setSelectedMenu(title);
+        setModule(mod);
+        fetchData(mod);
     };
-    const handleView = (row: any) => {
-        setFormMode("view");
-        setSelectedRow(row);
-        setShowForm(true);
-    };
- 
-    const handleUpdate = (row: any) => {
-        setFormMode("edit");
-        setSelectedRow(row);
-        setShowForm(true);
-    };
- 
-    const handleDelete = (row: any) => {
-        console.log("Delete clicked:", row);
-    };
-    const handleSubmitTenant = async (data: any) => {
-        if (formMode === "edit") {
-            console.log("Updating tenant", data);
-        } else {
-            console.log("Creating tenant", data);
-        
-        }
- 
-        fetchData(selectedMenu);
-    };
+
     return (
         <>
             <NavbarComponent />
- 
-            {/* Menu Bar */}
             <div
                 style={{
                     display: "flex",
@@ -128,51 +82,70 @@ const Adminlayout = () => {
                     alignItems: "center",
                 }}
             >
+
                 <Menubar
                     menubar={menuBar}
                     onClick={handleMenuClick}
                     selectedMenu={selectedMenu}
                 />
             </div>
- 
-            {/* Grid */}
+
             <div
                 style={{
                     display: "flex",
                     justifyContent: "flex-end",
                     marginBottom: "10px",
-                    marginRight: "10px"
+                    marginRight: "15px",
                 }}
             >
                 {permissions.canCreate && (
-                    <button className="btn btn-success" onClick={() => {
-                        setFormMode("create");
-                        setSelectedRow(null);
-                        setShowForm(true);
-                    }}>
-                        + CREATE {module?.toUpperCase()}
+                    <button
+                        className="btn btn-success"
+                        onClick={() => {
+                            setFormMode("create");
+                            setSelectedRow(null);
+                            setShowForm(true);
+                        }}
+                    >
+                        + CREATE {module.toUpperCase()}
                     </button>
                 )}
             </div>
- 
+
+
             <DynamicGrid
                 rowData={rowData}
-                type={selectedMenu === "Tenants" ? "tenant" : "hospital"}
-                onView={permissions.canView ? handleView : undefined}
-                onUpdate={permissions.canUpdate ? handleUpdate : undefined}
-                onDelete={permissions.canDelete ? handleDelete : undefined}
+                type={module}
+                onView={permissions.canView ? row => {
+                    setFormMode("view");
+                    setSelectedRow(row);
+                    setShowForm(true);
+                } : undefined}
+                onUpdate={permissions.canUpdate ? row => {
+                    setFormMode("edit");
+                    setSelectedRow(row);
+                    setShowForm(true);
+                } : undefined}
+                onDelete={permissions.canDelete ? row =>
+                    console.log("Delete:", row) : undefined}
             />
-            <TenantFormModal
-  show={showForm}
-  mode={formMode}
-  onClose={() => setShowForm(false)}
-  onSubmit={handleSubmitTenant}
-  initialData={selectedRow}
-/>
- 
+
+            <ModuleFormModal
+                show={showForm}
+                module={module}
+                mode={formMode}
+                onClose={() => setShowForm(false)}
+                initialData={selectedRow}
+                onSubmit={(data) => {
+                    console.log("Submit Data:", data);
+
+                    // Call your API here
+
+                    fetchData(module);
+                }}
+            />
         </>
     );
 };
- 
+
 export default Adminlayout;
- 

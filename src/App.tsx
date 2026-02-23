@@ -26,7 +26,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPage />} />
         <Route path="/reset-password" element={<ResetPage />} />
         <Route path="/dashboard/roles" element={<Role />} />
-        <Route path="/roles/create" element={<CreateRole/>}/>
+        {/* <Route path="/roles/create" element={<CreateRole/>}/> */}
         <Route path="/roles/view/:roleCode" element={<ViewRoles />} />
 
       </Routes>
