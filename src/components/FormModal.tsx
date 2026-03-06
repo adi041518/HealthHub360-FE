@@ -1,17 +1,43 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
-
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import { Formik } from "formik";
+import * as Yup from "yup";
+import { useSelector } from "react-redux";
+import { type RootState } from "../store/storeFile";
+ 
+interface FormValues {
+  roleCode: string;
+  name: string;
+  email: string;
+  phoneNo: string;
+  dob: string;
+  address: string;
+  department?: string;
+}
+ 
+const Department = [
+  "Cardiology",
+  "Neurology",
+  "Orthopedics",
+  "Pediatrics",
+  "Dermatology",
+  "General Medicine",
+];
+ 
 interface Props {
   show: boolean;
   module: string;
   mode: "create" | "edit" | "view";
   onClose: () => void;
-  onSubmit: (data: any) => void;
-  initialData?: any;
+  onSubmit: (data: Partial<FormValues>) => void;
+  initialData?: FormValues;
+  loading?: boolean;
 }
-
+ 
 const ModuleFormModal: React.FC<Props> = ({
   show,
   module,
@@ -19,156 +45,237 @@ const ModuleFormModal: React.FC<Props> = ({
   onClose,
   onSubmit,
   initialData,
+  loading,
 }) => {
-
   const isViewMode = mode === "view";
-
-  const [formData, setFormData] = useState<any>({
-    code: "",
-    name: "",
-    email: "",
-    phoneNo: "",
-    dob: "",
-    address: ""
+ 
+  const roles = useSelector((state: RootState) => state.role.roles);
+ 
+ 
+  const roleCodeFromModule = useMemo(() => {
+    console.log("ROles are: ",roles)
+    return (
+      roles.find(
+        (r) => r.roleName.toLowerCase() === module.toLowerCase()
+      )?.roleCode || ""
+    );
+  }, [roles, module]);
+ 
+  const initialValues: FormValues = useMemo(
+    () => ({
+      roleCode: initialData?.roleCode || roleCodeFromModule,
+      name: initialData?.name || "",
+      email: initialData?.email || "",
+      phoneNo: initialData?.phoneNo || "",
+      dob: initialData?.dob || "",
+      address: initialData?.address || "",
+      department: initialData?.department || "",
+    }),
+    [initialData, roleCodeFromModule]
+  );
+ 
+  const validationSchema = Yup.object({
+    name: Yup.string().required("Name is required"),
+    email: Yup.string()
+      .email("Invalid email")
+      .required("Email is required"),
+    phoneNo: Yup.string()
+      .required("Phone number is required")
+      .matches(/^[0-9]{10}$/, "Phone must be 10 digits"),
+    dob: Yup.string().required("Date of birth is required"),
+    address:
+      module !== "doctor"
+        ? Yup.string().required("Address is required")
+        : Yup.string(),
+    department:
+      module === "doctor"
+        ? Yup.string().required("Specialization is required")
+        : Yup.string(),
   });
-
-  useEffect(() => {
-    if (initialData) {
-      setFormData(initialData);
-    } else {
-      setFormData({
-        code: "",
-        name: "",
-        email: "",
-        phoneNo: "",
-        dob: "",
-        address: ""
-      });
-    }
-  }, [initialData, show]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (isViewMode) return;
-
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handleSubmit = () => {
-    if (isViewMode) return;
-
-    onSubmit(formData);
-    onClose();
-  };
-
+ 
   const getTitle = () => {
     const action =
       mode === "create"
-        ? "Create"
+        ? "CREATE"
         : mode === "edit"
-          ? "Edit"
-          : "View";
-
+        ? "EDIT"
+        : "VIEW";
+ 
     return `${action} ${module.toUpperCase()}`;
   };
-
-  const getButtonText = () => {
-    if (mode === "create") return "Create";
-    if (mode === "edit") return "Update";
-    return "";
-  };
-
+ 
   return (
     <Modal show={show} onHide={onClose} centered size="lg">
       <Modal.Header closeButton>
         <Modal.Title>{getTitle()}</Modal.Title>
       </Modal.Header>
+ 
+      <Formik<FormValues>
+        enableReinitialize
+        initialValues={initialValues}
+        validationSchema={validationSchema}
+        onSubmit={(values) => {
+          if (mode === "edit") {
+            const changed: Partial<FormValues> = {};
+ 
+            (Object.keys(values) as (keyof FormValues)[]).forEach(
+              (key) => {
+                if (initialData?.[key] !== values[key]) {
+                  changed[key] = values[key];
+                }
+              }
+            );
+ 
+            if (Object.keys(changed).length === 0) return;
+ 
+            onSubmit(changed);
+          } else {
+            onSubmit(values);
+          }
+ 
+          onClose();
+        }}
+      >
+        {({
+          handleSubmit,
+          handleChange,
+          values,
+          errors,
+          touched,
+        }) => (
+          <Form onSubmit={handleSubmit}>
+            <Modal.Body>
 
-      <Modal.Body>
-        <Form>
-
-          <Form.Group className="mb-3">
-            <Form.Label>Code</Form.Label>
-            <Form.Control
-              name="code"
-              value={formData.code}
-              onChange={handleChange}
-              disabled={isViewMode || mode === "edit"}
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>Name</Form.Label>
-            <Form.Control
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              disabled={isViewMode}
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>Email</Form.Label>
-            <Form.Control
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              disabled={isViewMode}
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>Phone</Form.Label>
-            <Form.Control
-              name="phoneNo"
-              value={formData.phoneNo}
-              onChange={handleChange}
-              disabled={isViewMode}
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>Date of Birth</Form.Label>
-            <Form.Control
-              type="date"
-              name="dob"
-              value={formData.dob}
-              onChange={handleChange}
-              disabled={isViewMode}
-            />
-          </Form.Group>
-
-          {module !== "doctor" && (
-            <Form.Group className="mb-3">
-              <Form.Label>Address</Form.Label>
-              <Form.Control
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                disabled={isViewMode}
-              />
-            </Form.Group>
-          )}
-
-        </Form>
-      </Modal.Body>
-
-      <Modal.Footer>
-        <Button variant="secondary" onClick={onClose}>
-          Close
-        </Button>
-
-        {!isViewMode && (
-          <Button variant="success" onClick={handleSubmit}>
-            {getButtonText()}
-          </Button>
+ 
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Name</Form.Label>
+                    <Form.Control
+                      name="name"
+                      value={values.name}
+                      onChange={handleChange}
+                      disabled={isViewMode}
+                      isInvalid={!!errors.name && touched.name}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.name}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </Col>
+ 
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Email</Form.Label>
+                    <Form.Control
+                      type="email"
+                      name="email"
+                      value={values.email}
+                      onChange={handleChange}
+                      disabled={isViewMode}
+                      isInvalid={!!errors.email && touched.email}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.email}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </Col>
+              </Row>
+ 
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Phone</Form.Label>
+                    <Form.Control
+                      name="phoneNo"
+                      value={values.phoneNo}
+                      onChange={handleChange}
+                      disabled={isViewMode}
+                      isInvalid={!!errors.phoneNo && touched.phoneNo}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.phoneNo}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </Col>
+ 
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Date of Birth</Form.Label>
+                    <Form.Control
+                      type="date"
+                      name="dob"
+                      value={values.dob}
+                      onChange={handleChange}
+                      disabled={isViewMode}
+                      isInvalid={!!errors.dob && touched.dob}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.dob}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </Col>
+              </Row>
+ 
+              {module === "doctor" ? (
+                <Form.Group className="mb-3">
+                  <Form.Label>Specialization</Form.Label>
+                  <Form.Select
+                    name="department"
+                    value={values.department}
+                    onChange={handleChange}
+                    disabled={isViewMode}
+                    isInvalid={!!errors.department && touched.department}
+                  >
+                    <option value="">Select Specialization</option>
+                    {Department.map((dept) => (
+                      <option key={dept} value={dept}>
+                        {dept}
+                      </option>
+                    ))}
+                  </Form.Select>
+                  <Form.Control.Feedback type="invalid">
+                    {errors.department}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              ) : (
+                <Form.Group className="mb-3">
+                  <Form.Label>Address</Form.Label>
+                  <Form.Control
+                    name="address"
+                    value={values.address}
+                    onChange={handleChange}
+                    disabled={isViewMode}
+                    isInvalid={!!errors.address && touched.address}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.address}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              )}
+            </Modal.Body>
+ 
+            {!isViewMode && (
+              <Modal.Footer>
+                <Button variant="secondary" onClick={onClose}>
+                  Close
+                </Button>
+ 
+                <Button type="submit" disabled={loading}>
+                  {loading
+                    ? "Please wait..."
+                    : mode === "edit"
+                    ? "Update"
+                    : "Create"}
+                </Button>
+              </Modal.Footer>
+            )}
+          </Form>
         )}
-      </Modal.Footer>
+      </Formik>
     </Modal>
   );
 };
-
+ 
 export default ModuleFormModal;
+ 

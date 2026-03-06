@@ -1,7 +1,7 @@
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button'
-import { Link, useNavigate } from 'react-router-dom'
+import {  useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { forgotPasswordApi } from '../axios/authapi.ts';
 type ForgotType = "email" | "phone";
@@ -119,9 +119,7 @@ function Forgot() {
                 )}
  
                 <div className="d-flex justify-content-between algin-items-center">
-                    <Link to="/login">
-                        <Button variant="primary">Submit</Button>
-                    </Link>
+                        <Button variant="primary" type='submit'>Submit</Button>
                 </div>
             </Form>
         </div>

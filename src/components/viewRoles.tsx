@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import { fetchRoleByIdApi } from "../axios/rolesApi";
 import type { Privilege } from "../types/role";
 import { ACCESS } from "../constants/modules";
 import { useNavigate } from "react-router-dom";
+type Props = {
+    roleCode: string;
+};
 
-const ViewRoles = () => {
-    const { roleCode } = useParams<{ roleCode: string }>();
+const ViewRoles = ({ roleCode }: Props) => {
 
     const [roleName, setRoleName] = useState("");
     const [privileges, setPrivileges] = useState<Privilege[]>([]);
@@ -36,8 +37,6 @@ const ViewRoles = () => {
 
         fetchRole();
     }, [roleCode]);
-
-
     if (loading) return <p>Loading...</p>;
 
     return (

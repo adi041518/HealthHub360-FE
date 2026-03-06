@@ -13,6 +13,6 @@ export const deleteRoleByIdApi = (roleCode: string) => {
 export const fetchRoleByIdApi = (roleCode: string) => {
     return axiosPrivate.get(`/role/fetch/${roleCode}`)
 }
-// export const editRoleByIdApi = (roleCode: string) => {
-//     return axiosPrivate.post(`role/update/$(roleCode)`)
-// }
+export const updateRoleByIdApi = (roleCode: string,payload:any) => {
+    return axiosPrivate.post(`role/update/${roleCode}`,payload)
+}

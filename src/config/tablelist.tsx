@@ -1,5 +1,5 @@
 import type { ICellRendererParams, ColDef } from "ag-grid-community";
-import type { AdminModuleType } from "./menubar";
+import type { AppModuleType } from "./menubar";
 
 type ActionHandler = (row: any) => void;
 
@@ -28,14 +28,13 @@ const baseColumns: ColDef[] = [
   },
 ];
 
-export const columnMap: Record<
-  AdminModuleType,
+export const columnMap:Partial<Record<AppModuleType,
   (
     onView?: ActionHandler,
     onUpdate?: ActionHandler,
     onDelete?: ActionHandler
   ) => ColDef[]
-> = {
+>> = {
   tenant: (onView, onUpdate, onDelete) => [
     ...baseColumns,
     { headerName: "Code", field: "code" },
@@ -102,4 +101,117 @@ export const columnMap: Record<
     actionColumn(onView, onUpdate, onDelete),
   ],
 
+  patient: (onView, onUpdate, onDelete) => [
+    ...baseColumns,
+
+    { headerName: "Patient Code", field: "code" },
+    { headerName: "Name", field: "name" },
+    { headerName: "Email", field: "email" },
+    { headerName: "PhoneNo", field: "phoneNo" },
+    { headerName: "Gender", field: "gender" },
+    { headerName: "Age", field: "age" },
+    { headerName: "Admission Date", field: "admissionDate" },
+    { headerName: "Hospital ID", field: "hospitalId" },
+    {
+      headerName: "Active",
+      field: "isActive",
+      valueFormatter: (params) => (params.value ? "Yes" : "No"),
+    },
+
+    actionColumn(onView, onUpdate, onDelete),
+  ],
+  appointment: (onView, onUpdate, onDelete) => [
+    ...baseColumns,
+
+    { headerName: "Appointment Code", field: "code" },
+    { headerName: "Date", field: "date" },
+    { headerName: "Time", field: "time" },
+    { headerName: "Doctor ID", field: "doctorId" },
+    { headerName: "Nurse ID", field: "nurseId" },
+    { headerName: "Medical ID", field: "medicalId" },
+    { headerName: "Hospital ID", field: "hospitalId" },
+    { headerName: "Reason", field: "reason" },
+    { headerName: "Symptoms", field: "symptoms" },
+    {
+      headerName: "Processing",
+      field: "isProcessing",
+      valueFormatter: (params) => (params.value ? "Yes" : "No"),
+    },
+
+    actionColumn(onView, onUpdate, onDelete),
+  ],
+  medicalRecord: (onView, onUpdate, onDelete) => [
+    ...baseColumns,
+
+    { headerName: "Record ID", field: "code" },
+    { headerName: "Appointment ID", field: "appointmentId" },
+    { headerName: "Patient ID", field: "patientId" },
+    { headerName: "Doctor ID", field: "doctorId" },
+    { headerName: "Nurse ID", field: "nurseId" },
+    { headerName: "Hospital ID", field: "hospitalId" },
+    { headerName: "Tenant ID", field: "tenantId" },
+
+
+
+
+    // -------------------
+    // Dates
+    // -------------------
+
+    {
+      headerName: "Created At",
+      field: "createdAt",
+      valueFormatter: (params) =>
+        new Date(params.value).toLocaleString(),
+    },
+
+
+    { headerName: "Created By", field: "createdBy" },
+
+
+    ...(onView || onUpdate || onDelete
+      ? [actionColumn(onView, onUpdate, onDelete)]
+      : []),
+  ],
+  medicine: (onView, onUpdate, onDelete) => [
+    ...baseColumns,
+
+    { headerName: "Medicine Code", field: "code" },
+    { headerName: "Medicine Name", field: "name" },
+    { headerName: "Dosage", field: "dosage" },
+    { headerName: "No Of Strips", field: "noOfStrips" },
+    { headerName: "Tablets / Strip", field: "tabletsPerStrip" },
+    { headerName: "Price / Strip", field: "pricePerStrip" },
+
+    {
+      headerName: "Expiry Date",
+      field: "expiryDate",
+      valueFormatter: (params) =>
+        new Date(params.value).toLocaleDateString(),
+    },
+
+    { headerName: "Hospital ID", field: "hospitalId" },
+    { headerName: "Tenant ID", field: "tenantId" },
+
+    { headerName: "Created By", field: "createdBy" },
+
+    { headerName: "Updated By", field: "updatedBy" },
+
+    actionColumn(onView, onUpdate, onDelete),
+  ],
+
+  bill: (onView, onUpdate, onDelete) => [
+    ...baseColumns,
+
+    { headerName: "Bill Code", field: "code" },
+    { headerName: "Patient ID", field: "patientId" },
+    { headerName: "Total Amount", field: "amount" },
+
+
+    { headerName: "Created By", field: "createdBy" },
+
+    ...(onView || onUpdate || onDelete
+      ? [actionColumn(onView, onUpdate, onDelete)]
+      : []),
+  ],
 };

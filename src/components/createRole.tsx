@@ -2,11 +2,13 @@ import { useState, useRef, useEffect } from "react";
 import type { Module, Access, Privilege } from "../types/role";
 import { MODULES, ACCESS } from "../constants/modules";
 import "./createRole.css";
-import { rolesApi } from "../axios/rolesApi";type Props = {
+import { rolesApi, fetchRoleByIdApi, updateRoleByIdApi } from "../axios/rolesApi"; type Props = {
     onSuccess: () => void;
+    roleCode?: string;
+    isEdit?: boolean;
 };
 
-const CreateRole = ({ onSuccess }: Props) => {
+const CreateRole = ({ onSuccess, roleCode, isEdit }: Props) => {
     const [roleName, setRoleName] = useState("");
     const [selectedModule, setSelectedModule] = useState<Module | "">("");
     const [selectedAccess, setSelectedAccess] = useState<Access[]>([]);
@@ -30,6 +32,24 @@ const CreateRole = ({ onSuccess }: Props) => {
         return () =>
             document.removeEventListener("mousedown", handleClickOutside);
     }, []);
+
+    useEffect(() => {
+        if (isEdit && roleCode) {
+            const fetchRole = async () => {
+                try {
+                    const res = await fetchRoleByIdApi(roleCode);
+                    const data = res.data.data;
+
+                    setRoleName(data.roleName);
+                    setPrivileges(data.privileges);
+                } catch (error) {
+                    console.error("Error fetching role:", error);
+                }
+            };
+
+            fetchRole();
+        }
+    }, [isEdit, roleCode]);
 
     const toggleAccess = (access: Access) => {
         if (selectedAccess.includes(access)) {
@@ -86,6 +106,29 @@ const CreateRole = ({ onSuccess }: Props) => {
         setPrivileges(privileges.filter((_, i) => i !== index));
     };
 
+    const saveRole = async () => {
+        if (!roleName || privileges.length === 0) {
+            alert("Please fill role name and privileges");
+            return;
+        }
+
+        const payload = {
+            roleName,
+            privileges
+        };
+
+        try {
+            const response = await rolesApi(payload);  // 🔥 API CALL
+            console.log("Response: ", response.data)
+
+            alert("Role created successfully");
+
+            onSuccess();      // 🔥 Navigate AFTER success
+        } catch (error) {
+            console.error(error);
+            alert("Error creating role");
+        }
+    };
     const addRole = async () => {
         if (!roleName || privileges.length === 0) {
             alert("Please fill role name and privileges");
@@ -98,21 +141,24 @@ const CreateRole = ({ onSuccess }: Props) => {
         };
 
         try {
-            const response=await rolesApi(payload);  // 🔥 API CALL
-            console.log("Response: ",response.data)
+            if (isEdit && roleCode) {
+                await updateRoleByIdApi(roleCode, payload);
+                alert("Role updated successfully");
+            } else {
+                await rolesApi(payload);
+                alert("Role created successfully");
+            }
 
-            alert("Role created successfully");
-
-            onSuccess();      // 🔥 Navigate AFTER success
+            onSuccess();
         } catch (error) {
             console.error(error);
-            alert("Error creating role");
+            alert("Error saving role");
         }
     };
 
     return (
         <div className="role-container">
-            <h2>Create Role</h2>
+            <h2>{isEdit ? "Edit Role" : "Create Role"}</h2>
 
             {/* Role Name */}
             <div className="form-group">
@@ -212,7 +258,7 @@ const CreateRole = ({ onSuccess }: Props) => {
             </div>
             <div className="add-role">
                 <button onClick={addRole}>
-                    Add role
+                    {isEdit ? "Update Role" : "Add Role"}
                 </button>
             </div>
         </div>

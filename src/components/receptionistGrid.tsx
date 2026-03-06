@@ -1,55 +1,55 @@
+// components/ReceptionGrid.tsx
+
 import { useMemo } from "react";
 import { AgGridReact } from "ag-grid-react";
-import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
+import {
+  ModuleRegistry,
+  AllCommunityModule,
+} from "ag-grid-community";
 import type { ColDef } from "ag-grid-community";
 
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
+import { receptionistColumnMap } from "../config/receptionistTableList";
+import type { ReceptionistModuleType } from "../config/menubar";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 interface Props {
   rowData: any[];
-  type: string;
-  columnMap: Record<
-    string,
-    (
-      onView?: (row: any) => void,
-      onUpdate?: (row: any) => void,
-      onDelete?: (row: any) => void
-    ) => ColDef[]
-  >;
-
+  type: ReceptionistModuleType;
   onView?: (row: any) => void;
   onUpdate?: (row: any) => void;
   onDelete?: (row: any) => void;
 }
 
-const DynamicGrid: React.FC<Props> = ({
+const ReceptionistGrid: React.FC<Props> = ({
   rowData,
   type,
-  columnMap,
   onView,
   onUpdate,
   onDelete,
 }) => {
   const columnDefs = useMemo<ColDef[]>(() => {
-    const generator = columnMap[type];
+    const generator = receptionistColumnMap[type];
     if (!generator) return [];
     return generator(onView, onUpdate, onDelete);
-  }, [type, columnMap, onView, onUpdate, onDelete]);
+  }, [type, onView, onUpdate, onDelete]);
 
-  const defaultColDef = useMemo<ColDef>(() => ({
-    sortable: false,
-    filter: false,
-    resizable: true,
-    flex: 2,
-    editable: false,
-  }), []);
+  const defaultColDef = useMemo<ColDef>(
+    () => ({
+      sortable: false,
+      filter: false,
+      resizable: true,
+      flex: 2,
+      editable: false,
+    }),
+    []
+  );
 
   return (
     <div
-      className="ag-theme-quartz custom-grid"
+      className="ag-theme-quartz"
       style={{ height: 500, width: "100%", marginTop: "20px" }}
     >
       <AgGridReact
@@ -66,4 +66,4 @@ const DynamicGrid: React.FC<Props> = ({
   );
 };
 
-export default DynamicGrid;
+export default ReceptionistGrid;

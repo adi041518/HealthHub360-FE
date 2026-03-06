@@ -1,43 +1,40 @@
 import { useMemo } from "react";
 import { AgGridReact } from "ag-grid-react";
-import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
+import {
+  ModuleRegistry,
+  AllCommunityModule,
+} from "ag-grid-community";
 import type { ColDef } from "ag-grid-community";
 
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 
+import type { BillingModuleType } from "../config/menubar";
+import { billingColumnMap } from "../config/billingTableList";
+
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 interface Props {
   rowData: any[];
-  type: string;
-  columnMap: Record<
-    string,
-    (
-      onView?: (row: any) => void,
-      onUpdate?: (row: any) => void,
-      onDelete?: (row: any) => void
-    ) => ColDef[]
-  >;
-
+  type: BillingModuleType;
   onView?: (row: any) => void;
-  onUpdate?: (row: any) => void;
   onDelete?: (row: any) => void;
 }
 
-const DynamicGrid: React.FC<Props> = ({
+const BillingGrid: React.FC<Props> = ({
   rowData,
   type,
-  columnMap,
   onView,
-  onUpdate,
   onDelete,
 }) => {
+
   const columnDefs = useMemo<ColDef[]>(() => {
-    const generator = columnMap[type];
+    const generator = billingColumnMap[type];
     if (!generator) return [];
-    return generator(onView, onUpdate, onDelete);
-  }, [type, columnMap, onView, onUpdate, onDelete]);
+
+    // Pass undefined for update since not supported
+    return generator(onView, undefined, onDelete);
+  }, [type, onView, onDelete]);
 
   const defaultColDef = useMemo<ColDef>(() => ({
     sortable: false,
@@ -66,4 +63,4 @@ const DynamicGrid: React.FC<Props> = ({
   );
 };
 
-export default DynamicGrid;
+export default BillingGrid;
